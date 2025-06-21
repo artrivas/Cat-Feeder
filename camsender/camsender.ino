@@ -1,21 +1,59 @@
+#include <WiFiClientSecure.h>   
+#include <HTTPClient.h>         
 #include "esp_camera.h"
 #include <WiFi.h>
-
+#include "esp32-hal-ledc.h"
 
 #define CAMERA_MODEL_AI_THINKER // Has PSRAM
 
+
 #include "camera_pins.h"
 
-// ===========================
-// Enter your WiFi credentials
-// ===========================
+//Defines
+
+#define CONFIG_LED_MAX_INTENSITY 255
+#define LED_LEDC_GPIO            4  //configure LED pin
+
+//Variables globales
+const char* upload_url = "https://iot-project-production-5bcd.up.railway.app/video/upload";
+
+// Opción rápida (menos segura) mientras pruebas:
+static WiFiClientSecure net;
+
 const char *ssid = "daddy";
 const char *password = "babytuapochoni";
+bool flash_next = false;      // To-do
 
-void startCameraServer();
-void setupLedFlash(int pin);
+
+void enable_led(bool en) {  
+  int duty = en ? CONFIG_LED_MAX_INTENSITY : 0;
+  ledcWrite(LED_LEDC_GPIO, duty);
+}
+
+void setupLedFlash(int pin) {
+  ledcAttach(pin, 5000, 8);
+}
+
+bool uploadFrame(camera_fb_t* fb)
+{
+  HTTPClient http;
+  if (!http.begin(net, upload_url)) {
+    Serial.println("HTTP begin failed");
+    return false;
+  }
+
+  http.addHeader("Content-Type", "image/jpeg");
+  int code = http.POST(fb->buf, fb->len);
+
+  http.end();
+  Serial.printf(">> POST %d (%d bytes)\n", code, fb->len);
+  return code == 200 || code == 201;
+}
 
 void setup() {
+  // put your setup code here, to run once:
+  net.setInsecure(); // saltar la verificacion TLS; cambia pq es inseguro
+
   Serial.begin(115200);
   Serial.setDebugOutput(true);
   Serial.println();
@@ -42,7 +80,6 @@ void setup() {
   config.xclk_freq_hz = 20000000;
   config.frame_size = FRAMESIZE_UXGA;
   config.pixel_format = PIXFORMAT_JPEG;  // for streaming
-  //config.pixel_format = PIXFORMAT_RGB565; // for face detection/recognition
   config.grab_mode = CAMERA_GRAB_WHEN_EMPTY;
   config.fb_location = CAMERA_FB_IN_PSRAM;
   config.jpeg_quality = 12;
@@ -116,15 +153,27 @@ void setup() {
   }
   Serial.println("");
   Serial.println("WiFi connected");
-
-  startCameraServer();
-
-  Serial.print("Camera Ready! Use 'http://");
-  Serial.print(WiFi.localIP());
-  Serial.println("' to connect");
 }
 
 void loop() {
-  // Do nothing. Everything is done in another task by the web server
-  delay(10000);
+  // put your main code here, to run repeatedly:
+  if(flash_next){
+    enable_led(true);
+    delay(150);
+  }
+  camera_fb_t *fb = esp_camera_fb_get();
+  if (!fb) {
+    Serial.println("Camera capture failed");
+    delay(1000);
+    return;
+  }
+
+  if (uploadFrame(fb)) {
+    Serial.println("Uploaded");
+  } else {
+    Serial.println("Upload failed");
+  }
+
+  esp_camera_fb_return(fb);
+  //delay(1000);          // 1 foto por segundo.  Ajusta a tu gusto
 }

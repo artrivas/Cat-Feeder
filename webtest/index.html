@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Video Stream</title>
+</head>
+<body>
+  <h2>Live Feed</h2>
+  <canvas id="canvas" width="320" height="240"></canvas>
+  <script>
+    const canvas = document.getElementById("canvas");
+    const ctx = canvas.getContext("2d");
+    const ws = new WebSocket("https://iot-project-production-5bcd.up.railway.app/video/ws");
+    ws.binaryType = "arraybuffer";
+
+    ws.onmessage = (event) => {
+      const blob = new Blob([event.data], { type: "image/jpeg" });
+      const url = URL.createObjectURL(blob);
+      const img = new Image();
+      img.onload = () => {
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        URL.revokeObjectURL(url);
+      };
+      img.src = url;
+    };
+
+    // Keep the connection alive
+    setInterval(() => ws.send("ping"), 5000);
+  </script>
+</body>
+</html>
