@@ -3,6 +3,7 @@
 #include "esp_camera.h"
 #include <WiFi.h>
 #include "esp32-hal-ledc.h"
+#include<PubSubClient.h>
 
 #define CAMERA_MODEL_AI_THINKER // Has PSRAM
 
@@ -24,6 +25,11 @@ const char *ssid = "daddy";
 const char *password = "babytuapochoni";
 bool flash_next = false;      // To-do
 
+//mqtt credentials
+const char* mqttServer = "http://a6633bd80ac046138e9ea11f0950f764.s1.eu.hivemq.cloud";
+const int mqttPort = 8883;
+const char* mqttUser = "espClient";
+const char* mqttPassword = "Espassword1";
 
 void enable_led(bool en) {  
   int duty = en ? CONFIG_LED_MAX_INTENSITY : 0;
