@@ -5,8 +5,8 @@
 
 #define MQTT_VERSION MQTT_VERSION_3_1_1
 
-#define TXD1 19
-#define RXD1 21
+#define TXD1 17
+#define RXD1 16
 
 // Wi-Fi credentials
 const char* ssid = "daddy";
@@ -68,6 +68,9 @@ unsigned long lastSend = 0;
 StaticJsonDocument<128> rxDoc;
 StaticJsonDocument<64>  txDoc;
 
+//For testing only
+//unsigned long servoTime = 0;
+
 
 
 void callback(char* topic, byte* payload, unsigned int length) {
@@ -95,12 +98,6 @@ void reconnect() {
     // Attempt to connect
     if (mqttClient.connect("ESPClient",mqtt_username,mqtt_password)) {
       Serial.println("connected");
-      // Once connected, publish an announcement...
-      /*mqttClient.publish("foodLevel","fl connected\n");
-      mqttClient.publish("bowlLevel","bl connected\n");
-      mqttClient.publish("foodTemperature","ft connected\n");
-      mqttClient.publish("foodHumidity","fh connected\n");*/
-      // ... and resubscribe
       mqttClient.subscribe("action",1);
     } else {
       Serial.print("failed, rc=");
@@ -117,7 +114,7 @@ void reconnect() {
 
 void setup() {
   Serial.begin(9600);
-  //Serial2.begin(115200, SERIAL_8N1, RXD1, TXD1);
+  Serial2.begin(115200, SERIAL_8N1, RXD1, TXD1);
   WiFi.begin(ssid, password);
   while (WiFi.status() != WL_CONNECTED) {
     delay(500);
@@ -142,7 +139,6 @@ void loop() {
   
   unsigned long now = millis();
   if(Serial2.available()){
-    Serial.print("holi\n");
     String message = Serial2.readStringUntil('\n');
     DeserializationError error = deserializeJson(rxDoc, message);
 
@@ -155,22 +151,26 @@ void loop() {
     
   }
   
-  
+  //To prove micro-servo I can do a millis()
+  /*if(millis() - servoTime > 10000){
+    Serial.print("activo servoooo\n");
+    txDoc.clear();
+    txDoc["servo"] = true;
+    serializeJson(txDoc,Serial2);
+    Serial2.println();
+    servoTime = millis();
+  }*/
+
   if (now - lastSend > 1000) { // Publish every 10 seconds don't know if its every 10seconds
     
     lastSend = now;
     
     //Read Sensors Values
-    /*float humidity = rxDoc["humidity"];
+    float humidity = rxDoc["humidity"];
     float temperature = rxDoc["temperature"];
     int value = rxDoc["pir"];
     long d1 = rxDoc["d1"];
-    long d2 = rxDoc["d2"];*/
-    float humidity= 1.2;
-    float temperature = 123;
-    int value = 1;
-    long d1 = 12;
-    long d2 = 13;
+    long d2 = rxDoc["d2"];
     
     // Convert the value to a string
     String hStr = String(humidity);
