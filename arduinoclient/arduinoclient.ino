@@ -45,6 +45,7 @@ void setup()
   pinMode(echo2, INPUT);
   digitalWrite(trigger2, LOW);
   pinMode(pirPin,INPUT);
+  myservo.write(0);
 }
 
 void loop()
@@ -77,6 +78,8 @@ void loop()
     //Lectura de temperatura analogica
     h = dht.readHumidity();
     t = dht.readTemperature();
+    //h = 124.32;
+    //t = 43.2;
     if(isnan(h) || isnan(t)){
       Serial.println("Error obteniendo los datos del sensor DHT11");
       return;
@@ -84,16 +87,24 @@ void loop()
     dhtTime = millis();
   }
   int value = digitalRead(pirPin);
+  
   digitalWrite(trigger1, HIGH);
   digitalWrite(trigger2, HIGH);
   delayMicroseconds(10);
   digitalWrite(trigger1, LOW);
   digitalWrite(trigger2, LOW);
-
+  
   t1 = pulseIn(echo1,HIGH);
   t2 = pulseIn(echo2,HIGH);
+  /*
+  Testing
+  int value = 2;
+  t1 = 1000; 
+  t2 = 2000;
+  */
   d1 = t1/59;
   d2 = t2/59;
+  
 
   txDoc["humidity"] = h;
   txDoc["temperature"] = t;
