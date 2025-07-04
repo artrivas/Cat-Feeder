@@ -5,9 +5,6 @@
 #define DHTPIN 7
 #define DHTTYPE DHT11
 
-#define TXD1 19
-#define RXD1 21
-
 DHT dht(DHTPIN, DHTTYPE);
 
 Servo myservo;
@@ -34,34 +31,34 @@ StaticJsonDocument<64>  txDoc;
 
 void setup()
 {
-  Serial2.begin(9600);
-  dht.begin();
+  Serial.begin(9600);
+  //dht.begin();
   myservo.attach(servoPin);
-  Serial.begin(115200);
-  pinMode(trigger1, OUTPUT);
-  pinMode(echo1, INPUT);
-  digitalWrite(trigger1, LOW);
-  pinMode(trigger2, OUTPUT);
-  pinMode(echo2, INPUT);
-  digitalWrite(trigger2, LOW);
-  pinMode(pirPin,INPUT);
+  Serial2.begin(115200);
+  //pinMode(trigger1, OUTPUT);
+  //pinMode(echo1, INPUT);
+  //digitalWrite(trigger1, LOW);
+  //pinMode(trigger2, OUTPUT);
+  //pinMode(echo2, INPUT);
+  //digitalWrite(trigger2, LOW);
+  //pinMode(pirPin,INPUT);
   myservo.write(0);
 }
 
 void loop()
 {
-  if(Serial.available()){
-    String message = Serial.readStringUntil('\n');
+  if(Serial2.available()){
+    String message = Serial2.readStringUntil('\n');
     DeserializationError error = deserializeJson(rxDoc, message);
 
     // Test if parsing succeeds.
     if (error) {
-      Serial.print(F("deserializeJson() failed: "));
-      Serial.println(error.f_str());
+      Serial2.print(F("deserializeJson() failed: "));
+      Serial2.println(error.f_str());
       return;
     }
     if(rxDoc["servo"] == true && !encendio){
-      Serial2.println("Feeding cats...");
+      Serial.println("Feeding cats...");
       myservo.write(90);
       encendio = true;  
       servoTime = millis(); 
@@ -71,22 +68,23 @@ void loop()
     myservo.write(0);
     encendio = false;
     //Aca deberia enviar el mensaje al backend
+    servoTime = millis();
   }
   long t1,d1,t2,d2;
   float h,t;
   if(millis() - dhtTime > 2000){
     //Lectura de temperatura analogica
-    h = dht.readHumidity();
-    t = dht.readTemperature();
-    //h = 124.32;
-    //t = 43.2;
+    //h = dht.readHumidity();
+    //t = dht.readTemperature();
+    h = 124.32;
+    t = 43.2;
     if(isnan(h) || isnan(t)){
-      Serial.println("Error obteniendo los datos del sensor DHT11");
+      Serial2.println("Error obteniendo los datos del sensor DHT11");
       return;
     }
     dhtTime = millis();
   }
-  int value = digitalRead(pirPin);
+  /*int value = digitalRead(pirPin);
   
   digitalWrite(trigger1, HIGH);
   digitalWrite(trigger2, HIGH);
@@ -96,12 +94,13 @@ void loop()
   
   t1 = pulseIn(echo1,HIGH);
   t2 = pulseIn(echo2,HIGH);
+  */
   /*
-  Testing
+  Testing*/
   int value = 2;
   t1 = 1000; 
   t2 = 2000;
-  */
+  
   d1 = t1/59;
   d2 = t2/59;
   
@@ -112,23 +111,23 @@ void loop()
   txDoc["d1"] = d1;
   txDoc["d2"] = d2;
 
-  serializeJson(txDoc, Serial);
-  Serial.println();
+  serializeJson(txDoc, Serial2);
+  Serial2.println();
 
-  Serial2.print("Distance: \t");
-  Serial2.print(d1);
-  Serial2.println("cm");
-  Serial2.print(d2);
-  Serial2.println("cm");
+  Serial.print("Distance: \t");
+  Serial.print(d1);
+  Serial.println("cm");
+  Serial.print(d2);
+  Serial.println("cm");
 
-  Serial2.print("Temperature = ");
-  Serial2.print(t);
-  Serial2.print(" Degree Celsius\n");
-  Serial2.print("Humidity: \t");
-  Serial2.println(h);
+  Serial.print("Temperature = ");
+  Serial.print(t);
+  Serial.print(" Degree Celsius\n");
+  Serial.print("Humidity: \t");
+  Serial.println(h);
 
-  Serial2.print("Pir: \t");
-  Serial2.println(value);
+  Serial.print("Pir: \t");
+  Serial.println(value);
 
   
 }
