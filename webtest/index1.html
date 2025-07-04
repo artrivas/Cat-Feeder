@@ -9,7 +9,8 @@
   <script>
     const canvas = document.getElementById("canvas");
     const ctx = canvas.getContext("2d");
-    const ws = new WebSocket("https://iot-project-production-5bcd.up.railway.app/video/ws/stream");
+
+    const ws = new WebSocket("https://iot-project-production-5bcd.up.railway.app/video/ws");
     ws.binaryType = "arraybuffer";
 
     ws.onmessage = (event) => {
@@ -22,9 +23,7 @@
       };
       img.src = url;
     };
-
-    // Keep the connection alive
-    setInterval(() => ws.send("ping"), 5000);
   </script>
 </body>
 </html>
+
