@@ -9,14 +9,14 @@
 #define RXD1 16
 
 // Wi-Fi credentials
-const char* ssid = "daddy";
-const char* password = "babytuapochoni";
+const char* ssid = "wifi-name";
+const char* password = "wifi-password";
 
 // MQTT broker details private
-const char* mqtt_broker = "a6633bd80ac046138e9ea11f0950f764.s1.eu.hivemq.cloud";
-const int mqtt_port = 8883;
-const char* mqtt_username = "intento";
-const char* mqtt_password = "intentO4321";
+const char* mqtt_broker = "host";
+const int mqtt_port = 1234; //Port
+const char* mqtt_username = "username";
+const char* mqtt_password = "password";
 
 // MQTT topic for IR sensor
 const char* foodLevel = "food/level";
