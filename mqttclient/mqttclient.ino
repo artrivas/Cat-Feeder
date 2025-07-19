@@ -23,6 +23,7 @@ const char* foodLevel = "food/level";
 const char* bowlLevel = "bowl/level";
 const char* foodTemperature = "food/temperature";
 const char* foodHumidity = "food/humidity";
+const char* catPresence = "cat/presence";
 const char* action = "action";
 
 const char* root_ca = \
@@ -178,6 +179,7 @@ void loop() {
     String vStr = String(value);
     String dStr1 = String(d1);
     String dStr2 = String(d2);
+    String p = String(presence);
     Serial.println(hStr);
     Serial.println(tStr);
     Serial.println(vStr);
@@ -188,5 +190,7 @@ void loop() {
     mqttClient.publish(foodHumidity, hStr.c_str());
     mqttClient.publish(foodLevel, dStr1.c_str());
     mqttClient.publish(bowlLevel, dStr2.c_str());
+    mqttClient.publish(catPresence, vStr.c_str());
+    
   }
 }
